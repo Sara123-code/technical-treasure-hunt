@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="en">
 <head>
@@ -20,8 +19,9 @@
 
     *{box-sizing:border-box;margin:0;padding:0}
     body{
-      font-family:'Poppins', sans-serif;
+      font-family:'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
       background:var(--bg);
+      background-color:#160014;
       color:var(--text);
       display:flex;justify-content:center;align-items:center;
       min-height:100vh;padding:24px;
@@ -53,12 +53,14 @@
     }
 
     .card{
+      width:100%;
       background:var(--card-bg);
       border:1px solid rgba(255,20,147,0.25);
       border-radius:var(--radius);
       box-shadow:0 8px 24px rgba(131,24,67,0.6);
       padding:24px 20px;
       text-align:center;
+      -webkit-backdrop-filter:blur(10px);
       backdrop-filter:blur(10px);
     }
 
@@ -83,17 +85,38 @@
       margin:12px 0 20px;
       border:1px solid rgba(255,20,147,0.3);
       box-shadow:inset 0 0 20px rgba(255,20,147,0.2);
+      text-align:left;
     }
-    #question{
-      font-size:19px;
+    #question-title{
+      font-size:16px;
       font-weight:600;
       color:var(--accent-light);
+      margin-bottom:12px;
+      text-align:center;
+    }
+    pre.code{
+      background:rgba(0,0,0,0.35);
+      border:1px solid rgba(255,20,147,0.25);
+      border-radius:12px;
+      padding:14px;
+      overflow-x:auto;
+      text-align:left;
+      -webkit-overflow-scrolling:touch;
+    }
+    pre.code code{
+      font-family:'Consolas','Courier New',monospace;
+      font-size:13px;
+      line-height:1.5;
+      color:#ffd6ec;
+      white-space:pre;
+      tab-size:4;
     }
 
     .choices{display:flex;flex-direction:column;gap:12px;margin-top:10px;}
     button.choice{
       background:linear-gradient(90deg, rgba(255,20,147,0.25), rgba(131,24,67,0.35));
       color:var(--text);
+      font-family:inherit;
       font-weight:600;
       border:none;border-radius:14px;
       padding:14px;
@@ -124,9 +147,8 @@
 <body oncontextmenu="return false;">
   <div class="shell">
     <div class="header">
-      <img src="https://www.navodayaengineering.edu.in/wp-content/uploads/2018/10/net__engg_logo_new.jpg" alt="Left Logo">
+      <img src="https://www.navodayaengineering.edu.in/wp-content/uploads/2018/10/net__engg_logo_new.jpg" alt="Navodaya College Logo">
       <h1>Technical Treasure Hunt</h1>
-      <a href="https://ibb.co/RG8g1vcH"><img src="https://i.ibb.co/JWZcNBHk/B-logo-Asset-13.png" alt="Right Logo"></a>
     </div>
 
     <div class="card">
@@ -134,35 +156,33 @@
         <p>Solve the question to unlock your next clue...</p>
       </div>
       <div id="timer">Time Left: 3:00</div>
+
       <div id="quiz-container">
         <div id="question-box">
-          <h2 id="question">public class Main {
+          <h2 id="question-title">What is the output of this program?</h2>
+<pre class="code"><code>public class Main {
     public static void main(String[] args) {
         new B();
     }
 }
+
 class A {
     A() { show(); }
     void show() { System.out.print("A"); }
 }
+
 class B extends A {
     int x = 5;
     B() { super(); show(); }
     void show() { System.out.print(x); }
-}
-</h2>
+}</code></pre>
         </div>
-        <div class="choices">
-          <button class="choice" onclick="checkAnswer(false)">A5</button>
-          <button class="choice" onclick="checkAnswer(false)">55</button>
-          <button class="choice" onclick="checkAnswer(true)">05</button>
-          <button class="choice" onclick="checkAnswer(false)">AA</button>
-        </div>
+        <div class="choices" id="choices"></div>
       </div>
 
       <div id="next-clue">
         <h3>✅ Correct!</h3>
-        <p><strong>Your next clue:</strong><br>I have <html>, <div> and servers talking to browsers. Build me a page and I will show it. </p>
+        <p><strong>Your next clue:</strong><br>I have &lt;html&gt;, &lt;div&gt; and servers talking to browsers. Build me a page and I will show it.</p>
       </div>
 
       <div id="penalty-box">
@@ -176,9 +196,10 @@ class B extends A {
   </div>
 
 <script>
-  var penaltyStorageKey = 'clue2_penalty';
+  // Unique key per clue page so penalties don't overlap with other clues
+  var penaltyStorageKey = 'clue_java_penalty';
   var QUIZ_SECONDS = 180;
-  var PENALTY_MS = 90000; // ✅ 1 minute 30 seconds
+  var PENALTY_MS = 90000; // 1 minute 30 seconds
   var quizTimeLeft = QUIZ_SECONDS;
   var quizTimerInterval, penaltyTimerInterval;
   var isQuizActive = false;
@@ -188,68 +209,106 @@ class B extends A {
   var penaltyBox = document.getElementById('penalty-box');
   var penaltyTimerEl = document.getElementById('penalty-timer');
   var nextClue = document.getElementById('next-clue');
+  var choicesEl = document.getElementById('choices');
 
-  document.addEventListener('visibilitychange',()=>{
-    if(document.visibilityState==='hidden' && isQuizActive){failQuiz('Cheating detected');}
+  // Options are shuffled on every load; correctness is tracked per option, not by position
+  var OPTIONS = [
+    { text: 'A5', correct: false },
+    { text: '55', correct: false },
+    { text: '05', correct: true  },
+    { text: 'AA', correct: false }
+  ];
+
+  function renderChoices() {
+    var opts = OPTIONS.slice();
+    for (var i = opts.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = opts[i]; opts[i] = opts[j]; opts[j] = tmp;
+    }
+    choicesEl.innerHTML = '';
+    opts.forEach(function (o) {
+      var b = document.createElement('button');
+      b.className = 'choice';
+      b.textContent = o.text;
+      b.addEventListener('click', function () { checkAnswer(o.correct); });
+      choicesEl.appendChild(b);
+    });
+  }
+
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'hidden' && isQuizActive) { failQuiz('Cheating detected'); }
   });
 
-  window.onload=()=>checkPenalty();
+  window.onload = function () { checkPenalty(); };
 
-  function checkPenalty(){
-    var start=localStorage.getItem(penaltyStorageKey);
-    if(start){
-      var elapsed=Date.now()-parseInt(start,10);
-      if(elapsed<PENALTY_MS){showPenalty(Math.ceil((PENALTY_MS-elapsed)/1000));return;}
-      else localStorage.removeItem(penaltyStorageKey);
+  function checkPenalty() {
+    var start = null;
+    try { start = localStorage.getItem(penaltyStorageKey); } catch (e) {}
+    if (start) {
+      var elapsed = Date.now() - parseInt(start, 10);
+      if (elapsed < PENALTY_MS) { showPenalty(Math.ceil((PENALTY_MS - elapsed) / 1000)); return; }
+      else { try { localStorage.removeItem(penaltyStorageKey); } catch (e) {} }
     }
     startQuiz();
   }
 
-  function startQuiz(){
-    quizContainer.style.display='block';isQuizActive=true;quizTimeLeft=QUIZ_SECONDS;
-    updateTimerDisplay();quizTimerInterval=setInterval(()=>{
-      quizTimeLeft--;updateTimerDisplay();
-      if(quizTimeLeft<=0)failQuiz('Time\'s up');
-    },1000);
+  function startQuiz() {
+    renderChoices();
+    quizContainer.style.display = 'block';
+    isQuizActive = true;
+    quizTimeLeft = QUIZ_SECONDS;
+    updateTimerDisplay();
+    quizTimerInterval = setInterval(function () {
+      quizTimeLeft--;
+      updateTimerDisplay();
+      if (quizTimeLeft <= 0) failQuiz("Time's up");
+    }, 1000);
   }
 
-  function updateTimerDisplay(){
-    var m=Math.floor(quizTimeLeft/60),s=quizTimeLeft%60;
-    timerEl.textContent='Time Left: '+m+':' + (s<10?'0'+s:s);
+  function updateTimerDisplay() {
+    var m = Math.floor(quizTimeLeft / 60), s = quizTimeLeft % 60;
+    timerEl.textContent = 'Time Left: ' + m + ':' + (s < 10 ? '0' + s : s);
   }
 
-  function checkAnswer(correct){
-    if(!isQuizActive)return;
-    correct?success():failQuiz('Wrong');
+  function checkAnswer(correct) {
+    if (!isQuizActive) return;
+    if (correct) success(); else failQuiz('Wrong');
   }
 
-  function success(){
-    isQuizActive=false;clearInterval(quizTimerInterval);
-    quizContainer.style.display='none';timerEl.style.display='none';nextClue.style.display='block';
+  function success() {
+    isQuizActive = false;
+    clearInterval(quizTimerInterval);
+    quizContainer.style.display = 'none';
+    timerEl.style.display = 'none';
+    nextClue.style.display = 'block';
     disableChoices(true);
   }
 
-  function failQuiz(reason){
-    if(!isQuizActive)return;isQuizActive=false;clearInterval(quizTimerInterval);
-    disableChoices(true);localStorage.setItem(penaltyStorageKey,Date.now());
-    showPenalty(PENALTY_MS/1000);console.log(reason);
+  function failQuiz(reason) {
+    if (!isQuizActive) return;
+    isQuizActive = false;
+    clearInterval(quizTimerInterval);
+    disableChoices(true);
+    try { localStorage.setItem(penaltyStorageKey, Date.now()); } catch (e) {}
+    showPenalty(PENALTY_MS / 1000);
+    console.log(reason);
   }
 
-  // ✅ Fixed version: start exactly from full 1:30
-  function showPenalty(sec){
-    quizContainer.style.display='none';
-    timerEl.style.display='none';
-    penaltyBox.style.display='block';
-    
-    let r = Math.ceil(sec);
+  // Penalty countdown starts exactly from the full 1:30
+  function showPenalty(sec) {
+    quizContainer.style.display = 'none';
+    timerEl.style.display = 'none';
+    penaltyBox.style.display = 'block';
+
+    var r = Math.ceil(sec);
     penaltyTimerEl.textContent = format(r);
 
     clearInterval(penaltyTimerInterval);
-    penaltyTimerInterval = setInterval(() => {
+    penaltyTimerInterval = setInterval(function () {
       r--;
       if (r <= 0) {
         clearInterval(penaltyTimerInterval);
-        localStorage.removeItem(penaltyStorageKey);
+        try { localStorage.removeItem(penaltyStorageKey); } catch (e) {}
         location.reload();
       } else {
         penaltyTimerEl.textContent = format(r);
@@ -257,10 +316,10 @@ class B extends A {
     }, 1000);
   }
 
-  // 🛡️ Screenshot Protection (Blank Capture Simulation)
-  document.addEventListener('keydown', function(e) {
+  // Screenshot protection (desktop PrintScreen only)
+  document.addEventListener('keydown', function (e) {
     if (e.key === 'PrintScreen' || e.key === 'Print') {
-      const overlay = document.createElement('div');
+      var overlay = document.createElement('div');
       overlay.style.position = 'fixed';
       overlay.style.top = 0;
       overlay.style.left = 0;
@@ -270,13 +329,13 @@ class B extends A {
       overlay.style.zIndex = '9999';
       overlay.style.pointerEvents = 'none';
       document.body.appendChild(overlay);
-      setTimeout(() => overlay.remove(), 2000);
-      alert("⚠️ Screenshot blocked — content protected!");
+      setTimeout(function () { overlay.remove(); }, 2000);
+      alert('⚠️ Screenshot blocked — content protected!');
     }
   });
 
-  function format(s){var m=Math.floor(s/60);s=s%60;return m+':' + (s<10?'0'+s:s);}
-  function disableChoices(x){document.querySelectorAll('button.choice').forEach(b=>b.disabled=x);}
+  function format(s) { var m = Math.floor(s / 60); s = s % 60; return m + ':' + (s < 10 ? '0' + s : s); }
+  function disableChoices(x) { document.querySelectorAll('button.choice').forEach(function (b) { b.disabled = x; }); }
 </script>
 </body>
 </html>
