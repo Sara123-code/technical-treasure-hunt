@@ -89,6 +89,16 @@
       color:var(--accent-light);
     }
 
+    pre.code{
+      background:rgba(0,0,0,0.35);border:1px solid rgba(255,16,240,0.25);
+      border-radius:12px;padding:14px;margin-top:12px;overflow-x:auto;
+      text-align:left;-webkit-overflow-scrolling:touch;
+    }
+    pre.code code{
+      font-family:'Consolas','Courier New',monospace;font-size:13px;line-height:1.5;
+      color:#ffd6f6;white-space:pre;tab-size:4;
+    }
+
     .choices{display:flex;flex-direction:column;gap:12px;margin-top:10px;}
     button.choice{
       background:linear-gradient(90deg, rgba(255,16,240,0.25), rgba(255,20,147,0.35));
@@ -134,19 +144,33 @@
       <div id="timer">Time Left: 3:00</div>
       <div id="quiz-container">
         <div id="question-box">
-          <h2 id="question">What is the result of subtracting the 8-bit, 2's complement number 00001101 (13) from 11111110 (-2)?</h2>
+          <h2 id="question">What is printed?</h2>
+<pre class="code"><code>public class Main {
+    public static void main(String[] args) {
+        new B();
+    }
+}
+class A {
+    A() { show(); }
+    void show() { System.out.print(&quot;A&quot;); }
+}
+class B extends A {
+    int x = 5;
+    B() { super(); show(); }
+    void show() { System.out.print(x); }
+}</code></pre>
         </div>
         <div class="choices">
-          <button class="choice" onclick="checkAnswer(false)">11110000 (-16)</button>
-          <button class="choice" onclick="checkAnswer(true)">11110001 (-15)</button>
-          <button class="choice" onclick="checkAnswer(false)">00001111 (15)</button>
-          <button class="choice" onclick="checkAnswer(false)">11110111 (-17)</button>
+          <button class="choice" onclick="checkAnswer(false)">A5</button>
+          <button class="choice" onclick="checkAnswer(false)">55</button>
+          <button class="choice" onclick="checkAnswer(true)">05</button>
+          <button class="choice" onclick="checkAnswer(false)">AA</button>
         </div>
       </div>
 
       <div id="next-clue">
         <h3>✅ Correct!</h3>
-        <p><strong>Your next clue:</strong><br>Go to the place where the college bell rings — look <em>down</em>, not up, for your next sign.</p>
+        <p><strong>Your next clue:</strong><br>I have &lt;html&gt;, &lt;div&gt; and servers talking to browsers. Build me a page and I will show it.</p>
       </div>
 
       <div id="penalty-box">
@@ -160,7 +184,7 @@
   </div>
 
 <script>
-  var penaltyStorageKey = 'clue2_penalty';
+  var penaltyStorageKey = 'pixels2k25_t1q1_penalty';
   var QUIZ_SECONDS = 180;
   var PENALTY_MS = 90000; // ✅ 1 minute 30 seconds
   var quizTimeLeft = QUIZ_SECONDS;
