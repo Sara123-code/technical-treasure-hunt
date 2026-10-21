@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Technical Treasure Hunt</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg: radial-gradient(circle at 20% 30%, #8a0b5c, #1c0016);
+      --card-bg: rgba(255, 20, 147, 0.15);
+      --accent: #ff10f0;
+      --accent-light: #ff9ef5;
+      --text: #fff0fa;
+      --muted: #e0a8d4;
+      --danger: #ff3b3b;
+      --radius: 18px;
+    }
+
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      font-family:'Poppins', sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      display:flex;justify-content:center;align-items:center;
+      min-height:100vh;padding:24px;
+      user-select:none;-webkit-user-select:none;
+    }
+
+    .shell{width:100%;max-width:520px;position:relative;display:flex;flex-direction:column;align-items:center;}
+
+    .header{
+      display:flex;align-items:center;justify-content:center;gap:18px;
+      background:linear-gradient(90deg, rgba(255,16,240,0.2), rgba(255,20,147,0.3));
+      border-radius:16px;
+      padding:12px 18px;
+      margin-bottom:18px;
+      box-shadow:0 4px 18px rgba(255,20,147,0.4);
+      border:1px solid rgba(255,16,240,0.3);
+    }
+    .header img{
+      width:65px;height:65px;
+      object-fit:contain;
+      background:white;
+      border-radius:12px;
+      padding:6px;
+      box-shadow:0 0 12px rgba(255,16,240,0.6);
+    }
+    .header h1{
+      font-size:20px;font-weight:700;letter-spacing:0.3px;text-align:center;
+      color:var(--accent-light);
+    }
+
+    .card{
+      background:var(--card-bg);
+      border:1px solid rgba(255,16,240,0.25);
+      border-radius:var(--radius);
+      box-shadow:0 8px 24px rgba(255,20,147,0.6);
+      padding:24px 20px;
+      text-align:center;
+      backdrop-filter:blur(10px);
+    }
+
+    .brand p{font-size:13px;color:var(--muted);margin-top:4px;}
+
+    #timer{
+      margin:16px auto;
+      display:inline-block;
+      padding:10px 20px;
+      font-weight:700;
+      background:rgba(255,16,240,0.1);
+      color:var(--accent-light);
+      border-radius:12px;
+      border:1px solid rgba(255,16,240,0.2);
+      box-shadow:0 0 10px rgba(255,16,240,0.3);
+    }
+
+    #question-box{
+      background:linear-gradient(135deg, rgba(255,20,147,0.15), rgba(255,16,240,0.15));
+      border-radius:16px;
+      padding:20px;
+      margin:12px 0 20px;
+      border:1px solid rgba(255,16,240,0.3);
+      box-shadow:inset 0 0 20px rgba(255,16,240,0.2);
+    }
+    #question{
+      font-size:19px;
+      font-weight:600;
+      color:var(--accent-light);
+    }
+
+    .choices{display:flex;flex-direction:column;gap:12px;margin-top:10px;}
+    button.choice{
+      background:linear-gradient(90deg, rgba(255,16,240,0.25), rgba(255,20,147,0.35));
+      color:var(--text);
+      font-weight:600;
+      border:none;border-radius:14px;
+      padding:14px;
+      font-size:15px;
+      cursor:pointer;
+      transition:all .2s ease;
+      box-shadow:0 4px 10px rgba(255,20,147,0.3);
+    }
+    button.choice:hover{background:rgba(255,16,240,0.45);transform:translateY(-2px);box-shadow:0 6px 14px rgba(255,16,240,0.4);}
+    button.choice:disabled{opacity:0.6;cursor:not-allowed;}
+
+    #next-clue{
+      display:none;margin-top:18px;padding:16px;border-radius:14px;
+      background:rgba(255,16,240,0.15);border:1px solid rgba(255,16,240,0.25);
+      color:var(--accent-light);
+    }
+    #next-clue h3{margin-bottom:6px;color:#ffb3f7;}
+
+    #penalty-box{
+      display:none;margin-top:18px;padding:18px;border-radius:14px;
+      background:rgba(255,59,59,0.1);border:1px solid rgba(255,59,59,0.3);
+      color:var(--danger);
+    }
+
+    .meta{text-align:center;margin-top:16px;font-size:12px;color:var(--muted)}
+  </style>
+</head>
+<body oncontextmenu="return false;">
+  <div class="shell">
+    <div class="header">
+      <img src="https://www.navodayaengineering.edu.in/wp-content/uploads/2018/10/net__engg_logo_new.jpg" alt="Navodaya Logo">
+      <h1>Technical Treasure Hunt</h1>
+    </div>
+
+    <div class="card">
+      <div class="brand">
+        <p>Solve the question to unlock your next clue...</p>
+      </div>
+      <div id="timer">Time Left: 3:00</div>
+      <div id="quiz-container">
+        <div id="question-box">
+          <h2 id="question">What is the result of subtracting the 8-bit, 2's complement number 00001101 (13) from 11111110 (-2)?</h2>
+        </div>
+        <div class="choices">
+          <button class="choice" onclick="checkAnswer(false)">11110000 (-16)</button>
+          <button class="choice" onclick="checkAnswer(true)">11110001 (-15)</button>
+          <button class="choice" onclick="checkAnswer(false)">00001111 (15)</button>
+          <button class="choice" onclick="checkAnswer(false)">11110111 (-17)</button>
+        </div>
+      </div>
+
+      <div id="next-clue">
+        <h3>✅ Correct!</h3>
+        <p><strong>Your next clue:</strong><br>Go to the place where the college bell rings — look <em>down</em>, not up, for your next sign.</p>
+      </div>
+
+      <div id="penalty-box">
+        <h2>Penalty Active!</h2>
+        <p>You failed this clue. Wait for 1:30 minutes before retrying.</p>
+        <h2 id="penalty-timer">1:30</h2>
+      </div>
+
+      <div class="meta"></div>
+    </div>
+  </div>
+
+<script>
+  var penaltyStorageKey = 'clue2_penalty';
+  var QUIZ_SECONDS = 180;
+  var PENALTY_MS = 90000; // ✅ 1 minute 30 seconds
+  var quizTimeLeft = QUIZ_SECONDS;
+  var quizTimerInterval, penaltyTimerInterval;
+  var isQuizActive = false;
+
+  var quizContainer = document.getElementById('quiz-container');
+  var timerEl = document.getElementById('timer');
+  var penaltyBox = document.getElementById('penalty-box');
+  var penaltyTimerEl = document.getElementById('penalty-timer');
+  var nextClue = document.getElementById('next-clue');
+
+  document.addEventListener('visibilitychange',()=>{
+    if(document.visibilityState==='hidden' && isQuizActive){failQuiz('Cheating detected');}
+  });
+
+  window.onload=()=>checkPenalty();
+
+  function checkPenalty(){
+    var start=localStorage.getItem(penaltyStorageKey);
+    if(start){
+      var elapsed=Date.now()-parseInt(start,10);
+      if(elapsed<PENALTY_MS){showPenalty(Math.ceil((PENALTY_MS-elapsed)/1000));return;}
+      else localStorage.removeItem(penaltyStorageKey);
+    }
+    startQuiz();
+  }
+
+  function startQuiz(){
+    quizContainer.style.display='block';isQuizActive=true;quizTimeLeft=QUIZ_SECONDS;
+    updateTimerDisplay();quizTimerInterval=setInterval(()=>{
+      quizTimeLeft--;updateTimerDisplay();
+      if(quizTimeLeft<=0)failQuiz('Time\'s up');
+    },1000);
+  }
+
+  function updateTimerDisplay(){
+    var m=Math.floor(quizTimeLeft/60),s=quizTimeLeft%60;
+    timerEl.textContent='Time Left: '+m+':' + (s<10?'0'+s:s);
+  }
+
+  function checkAnswer(correct){
+    if(!isQuizActive)return;
+    correct?success():failQuiz('Wrong');
+  }
+
+  function success(){
+    isQuizActive=false;clearInterval(quizTimerInterval);
+    quizContainer.style.display='none';timerEl.style.display='none';nextClue.style.display='block';
+    disableChoices(true);
+  }
+
+  function failQuiz(reason){
+    if(!isQuizActive)return;isQuizActive=false;clearInterval(quizTimerInterval);
+    disableChoices(true);localStorage.setItem(penaltyStorageKey,Date.now());
+    showPenalty(PENALTY_MS/1000);console.log(reason);
+  }
+
+  // ✅ Fixed version: start exactly from full 1:30
+  function showPenalty(sec){
+    quizContainer.style.display='none';
+    timerEl.style.display='none';
+    penaltyBox.style.display='block';
+    
+    let r = Math.ceil(sec);
+    penaltyTimerEl.textContent = format(r);
+
+    clearInterval(penaltyTimerInterval);
+    penaltyTimerInterval = setInterval(() => {
+      r--;
+      if (r <= 0) {
+        clearInterval(penaltyTimerInterval);
+        localStorage.removeItem(penaltyStorageKey);
+        location.reload();
+      } else {
+        penaltyTimerEl.textContent = format(r);
+      }
+    }, 1000);
+  }
+
+  // 🛡️ Screenshot Protection (Blank Capture Simulation)
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'PrintScreen' || e.key === 'Print') {
+      const overlay = document.createElement('div');
+      overlay.style.position = 'fixed';
+      overlay.style.top = 0;
+      overlay.style.left = 0;
+      overlay.style.width = '100%';
+      overlay.style.height = '100%';
+      overlay.style.background = '#fff';
+      overlay.style.zIndex = '9999';
+      overlay.style.pointerEvents = 'none';
+      document.body.appendChild(overlay);
+      setTimeout(() => overlay.remove(), 2000);
+      alert("⚠️ Screenshot blocked — content protected!");
+    }
+  });
+
+  function format(s){var m=Math.floor(s/60);s=s%60;return m+':' + (s<10?'0'+s:s);}
+  function disableChoices(x){document.querySelectorAll('button.choice').forEach(b=>b.disabled=x);}
+</script>
+</body>
+</html>
