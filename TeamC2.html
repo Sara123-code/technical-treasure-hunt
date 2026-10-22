@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Technical Treasure Hunt</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg: radial-gradient(circle at 20% 30%, #8a0b5c, #1c0016);
+      --card-bg: rgba(255, 20, 147, 0.15);
+      --accent: #ff10f0;
+      --accent-light: #ff9ef5;
+      --text: #fff0fa;
+      --muted: #e0a8d4;
+      --danger: #ff3b3b;
+      --radius: 18px;
+    }
+
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      font-family:'Poppins', sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      display:flex;justify-content:center;align-items:center;
+      min-height:100vh;padding:24px;
+      user-select:none;-webkit-user-select:none;
+    }
+
+    .shell{width:100%;max-width:520px;position:relative;display:flex;flex-direction:column;align-items:center;}
+
+    .header{
+      display:flex;align-items:center;justify-content:center;gap:18px;
+      background:linear-gradient(90deg, rgba(255,16,240,0.2), rgba(255,20,147,0.3));
+      border-radius:16px;
+      padding:12px 18px;
+      margin-bottom:18px;
+      box-shadow:0 4px 18px rgba(255,20,147,0.4);
+      border:1px solid rgba(255,16,240,0.3);
+    }
+    .header img{
+      width:65px;height:65px;
+      object-fit:contain;
+      background:white;
+      border-radius:12px;
+      padding:6px;
+      box-shadow:0 0 12px rgba(255,16,240,0.6);
+    }
+    .header h1{
+      font-size:20px;font-weight:700;letter-spacing:0.3px;text-align:center;
+      color:var(--accent-light);
+    }
+
+    .card{
+      background:var(--card-bg);
+      border:1px solid rgba(255,16,240,0.25);
+      border-radius:var(--radius);
+      box-shadow:0 8px 24px rgba(255,20,147,0.6);
+      padding:24px 20px;
+      text-align:center;
+      backdrop-filter:blur(10px);
+    }
+
+    .brand p{font-size:13px;color:var(--muted);margin-top:4px;}
+
+    #timer{
+      margin:16px auto;
+      display:inline-block;
+      padding:10px 20px;
+      font-weight:700;
+      background:rgba(255,16,240,0.1);
+      color:var(--accent-light);
+      border-radius:12px;
+      border:1px solid rgba(255,16,240,0.2);
+      box-shadow:0 0 10px rgba(255,16,240,0.3);
+    }
+
+    #question-box{
+      background:linear-gradient(135deg, rgba(255,20,147,0.15), rgba(255,16,240,0.15));
+      border-radius:16px;
+      padding:20px;
+      margin:12px 0 20px;
+      border:1px solid rgba(255,16,240,0.3);
+      box-shadow:inset 0 0 20px rgba(255,16,240,0.2);
+    }
+    #question{
+      font-size:19px;
+      font-weight:600;
+      color:var(--accent-light);
+    }
+
+    pre.code{
+      background:rgba(0,0,0,0.35);border:1px solid rgba(255,16,240,0.25);
+      border-radius:12px;padding:14px;margin-top:12px;overflow-x:auto;
+      text-align:left;-webkit-overflow-scrolling:touch;
+    }
+    pre.code code{
+      font-family:'Consolas','Courier New',monospace;font-size:13px;line-height:1.5;
+      color:#ffd6f6;white-space:pre;tab-size:4;
+    }
+
+    .choices{display:flex;flex-direction:column;gap:12px;margin-top:10px;}
+    button.choice{
+      background:linear-gradient(90deg, rgba(255,16,240,0.25), rgba(255,20,147,0.35));
+      color:var(--text);
+      font-weight:600;
+      border:none;border-radius:14px;
+      padding:14px;
+      font-size:15px;
+      cursor:pointer;
+      transition:all .2s ease;
+      box-shadow:0 4px 10px rgba(255,20,147,0.3);
+    }
+    button.choice:hover{background:rgba(255,16,240,0.45);transform:translateY(-2px);box-shadow:0 6px 14px rgba(255,16,240,0.4);}
+    button.choice:disabled{opacity:0.6;cursor:not-allowed;}
+
+    #next-clue{
+      display:none;margin-top:18px;padding:16px;border-radius:14px;
+      background:rgba(255,16,240,0.15);border:1px solid rgba(255,16,240,0.25);
+      color:var(--accent-light);
+    }
+    #next-clue h3{margin-bottom:6px;color:#ffb3f7;}
+
+    #penalty-box{
+      display:none;margin-top:18px;padding:18px;border-radius:14px;
+      background:rgba(255,59,59,0.1);border:1px solid rgba(255,59,59,0.3);
+      color:var(--danger);
+    }
+
+    .meta{text-align:center;margin-top:16px;font-size:12px;color:var(--muted)}
+  </style>
+</head>
+<body oncontextmenu="return false;">
+  <div class="shell">
+    <div class="header">
+      <img src="https://www.navodayaengineering.edu.in/wp-content/uploads/2018/10/net__engg_logo_new.jpg" alt="Navodaya Logo">
+      <h1>Technical Treasure Hunt</h1>
+    </div>
+
+    <div class="card">
+      <div class="brand">
+        <p>Solve the question to unlock your next clue...</p>
+      </div>
+      <div id="timer">Time Left: 3:00</div>
+      <div id="quiz-container">
+        <div id="question-box">
+          <h2 id="question">What is printed? (Output lines are shown separated by &#x27; / &#x27;.)</h2>
+<pre class="code"><code>g = (i * i for i in range(4))
+print(sum(g), sum(g), list(g))
+
+x = 10
+print([x for x in range(3)], x)
+
+d = {}
+d[1] = &#x27;a&#x27;
+d[1.0] = &#x27;b&#x27;
+d[True] = &#x27;c&#x27;
+print(len(d), d)</code></pre>
+        </div>
+        <div class="choices">
+          <button class="choice" onclick="checkAnswer(false)">14 14 [0, 1, 4, 9] / [0, 1, 2] 10 / 1 {1: &#x27;c&#x27;}</button>
+          <button class="choice" onclick="checkAnswer(true)">14 0 [] / [0, 1, 2] 10 / 1 {1: &#x27;c&#x27;}</button>
+          <button class="choice" onclick="checkAnswer(false)">14 0 [] / [0, 1, 2] 2 / 1 {1: &#x27;c&#x27;}</button>
+          <button class="choice" onclick="checkAnswer(false)">14 0 [] / [0, 1, 2] 10 / 3 {1: &#x27;a&#x27;, 1.0: &#x27;b&#x27;, True: &#x27;c&#x27;}</button>
+        </div>
+      </div>
+
+      <div id="next-clue">
+        <h3>✅ Correct!</h3>
+        <p><strong>Your next clue:</strong><br>Where rows and columns hold their place, 
+And linked-up records form a database. 
+Queries uncover what lies within, 
+Seek the place where structured records flow
+</p>
+      </div>
+
+      <div id="penalty-box">
+        <h2>Penalty Active!</h2>
+        <p>You failed this clue. Wait for 1:30 minutes before retrying.</p>
+        <h2 id="penalty-timer">1:30</h2>
+      </div>
+
+      <div class="meta"></div>
+    </div>
+  </div>
+
+<script>
+  var penaltyStorageKey = 'pixels2k25_t3q2_penalty';
+  var deadlineKey = penaltyStorageKey + '_deadline';
+  var solvedKey = penaltyStorageKey + '_solved';
+  var QUIZ_SECONDS = 180;
+  var PENALTY_MS = 90000; // 1 minute 30 seconds
+  var quizTimerInterval, penaltyTimerInterval;
+  var isQuizActive = false;
+  var quizDeadline = 0;
+
+  var quizContainer = document.getElementById('quiz-container');
+  var timerEl = document.getElementById('timer');
+  var penaltyBox = document.getElementById('penalty-box');
+  var penaltyTimerEl = document.getElementById('penalty-timer');
+  var nextClue = document.getElementById('next-clue');
+
+  // ---- Saved in several places (localStorage, sessionStorage, cookie, window.name) so that
+  // ---- reloading, a new tab, or clearing just one of them does not reset the timers.
+  function saveVal(k, v) {
+    v = String(v);
+    try { localStorage.setItem(k, v); } catch (e) {}
+    try { sessionStorage.setItem(k, v); } catch (e) {}
+    try { document.cookie = k + '=' + v + '; max-age=86400; path=/; SameSite=Lax'; } catch (e) {}
+    try { var o = JSON.parse(window.name || '{}'); o[k] = v; window.name = JSON.stringify(o); } catch (e) { try { window.name = JSON.stringify(JSON.parse('{}')); } catch (e2) {} }
+  }
+  function loadVal(k) {
+    var v = null;
+    try { v = localStorage.getItem(k); } catch (e) {}
+    if (v == null) { try { v = sessionStorage.getItem(k); } catch (e) {} }
+    if (v == null) { try { var m = document.cookie.match(new RegExp('(?:^|; )' + k + '=([^;]*)')); if (m) v = m[1]; } catch (e) {} }
+    if (v == null) { try { var o = JSON.parse(window.name || '{}'); if (o && o[k] != null) v = o[k]; } catch (e) {} }
+    return v;
+  }
+  function dropVal(k) {
+    try { localStorage.removeItem(k); } catch (e) {}
+    try { sessionStorage.removeItem(k); } catch (e) {}
+    try { document.cookie = k + '=; max-age=0; path=/'; } catch (e) {}
+    try { var o = JSON.parse(window.name || '{}'); delete o[k]; window.name = JSON.stringify(o); } catch (e) {}
+  }
+
+  document.addEventListener('visibilitychange',()=>{
+    if(document.visibilityState==='hidden' && isQuizActive){failQuiz('Cheating detected');}
+  });
+
+  window.onload=()=>checkState();
+
+  function checkState(){
+    // already solved on this device: keep showing the clue
+    if(loadVal(solvedKey)){ showClue(); return; }
+
+    // quiz timer ran out while the page was closed or reloaded: the penalty counts from that moment
+    var dl = parseInt(loadVal(deadlineKey),10);
+    if(dl && dl <= Date.now()){ saveVal(penaltyStorageKey, dl); dropVal(deadlineKey); }
+
+    var start = parseInt(loadVal(penaltyStorageKey),10);
+    if(start){
+      var elapsed = Date.now()-start;
+      if(elapsed < PENALTY_MS){ showPenalty(Math.ceil((PENALTY_MS-elapsed)/1000)); return; }
+      else dropVal(penaltyStorageKey);
+    }
+    startQuiz();
+  }
+
+  // The countdown is based on a saved end time (not on counting ticks), so it keeps the right
+  // value even if the page is paused, throttled, reloaded or blocked for a while.
+  function startQuiz(){
+    quizDeadline = parseInt(loadVal(deadlineKey),10);
+    if(!quizDeadline){ quizDeadline = Date.now() + QUIZ_SECONDS*1000; saveVal(deadlineKey, quizDeadline); }
+    quizContainer.style.display='block';isQuizActive=true;
+    tick();
+    quizTimerInterval=setInterval(tick,250);
+  }
+
+  function tick(){
+    if(!isQuizActive) return;
+    var left = Math.max(0, Math.ceil((quizDeadline-Date.now())/1000));
+    var m=Math.floor(left/60),s=left%60;
+    timerEl.textContent='Time Left: '+m+':' + (s<10?'0'+s:s);
+    if(left<=0) failQuiz('Time\'s up', quizDeadline);
+  }
+
+  function checkAnswer(correct){
+    if(!isQuizActive)return;
+    correct?success():failQuiz('Wrong');
+  }
+
+  function success(){
+    isQuizActive=false;clearInterval(quizTimerInterval);
+    dropVal(deadlineKey);dropVal(penaltyStorageKey);saveVal(solvedKey,'1');
+    showClue();
+    disableChoices(true);
+  }
+
+  function showClue(){
+    quizContainer.style.display='none';timerEl.style.display='none';nextClue.style.display='block';
+  }
+
+  function failQuiz(reason, startAt){
+    if(!isQuizActive)return;isQuizActive=false;clearInterval(quizTimerInterval);
+    disableChoices(true);
+    startAt = startAt || Date.now();
+    saveVal(penaltyStorageKey, startAt);dropVal(deadlineKey);
+    showPenalty(Math.max(0, Math.ceil((PENALTY_MS-(Date.now()-startAt))/1000)));console.log(reason);
+  }
+
+  // Penalty countdown also uses an end time, so it cannot be paused
+  function showPenalty(sec){
+    quizContainer.style.display='none';
+    timerEl.style.display='none';
+    penaltyBox.style.display='block';
+
+    var endAt = Date.now() + sec*1000;
+    penaltyTimerEl.textContent = format(Math.ceil(sec));
+
+    clearInterval(penaltyTimerInterval);
+    penaltyTimerInterval = setInterval(() => {
+      var r = Math.ceil((endAt-Date.now())/1000);
+      if (r <= 0) {
+        clearInterval(penaltyTimerInterval);
+        dropVal(penaltyStorageKey);
+        location.reload();
+      } else {
+        penaltyTimerEl.textContent = format(r);
+      }
+    }, 250);
+  }
+
+  function format(s){var m=Math.floor(s/60);s=s%60;return m+':' + (s<10?'0'+s:s);}
+  function disableChoices(x){document.querySelectorAll('button.choice').forEach(b=>b.disabled=x);}
+</script>
+</body>
+</html>
